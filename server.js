@@ -8,7 +8,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_FILE = process.env.DB_PATH || './school_timetable.db';
+const DB_FILE = process.env.DB_PATH || '/var/data/school_timetable.db';
 
 // Connect to the existing SQLite database.
 // This preserves the existing timetable records.
