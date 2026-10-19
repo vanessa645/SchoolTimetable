@@ -1,0 +1,197 @@
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f6fb;
+    color: #243047;
+    line-height: 1.6;
+}
+
+.container {
+    width: min(1200px, 94%);
+    margin: auto;
+}
+
+.header {
+    background: #163b72;
+    color: white;
+    padding: 28px 0;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 30px;
+}
+
+.header p {
+    margin: 5px 0 0;
+}
+
+.welcome {
+    padding: 24px 0 10px;
+}
+
+.welcome h2 {
+    margin-bottom: 4px;
+}
+
+.card {
+    background: white;
+    padding: 24px;
+    margin: 20px 0;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+}
+
+.card h2 {
+    margin-top: 0;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #cbd3df;
+    border-radius: 5px;
+    font: inherit;
+}
+
+input:focus,
+select:focus {
+    outline: 2px solid #80aef5;
+    border-color: #2865b5;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 5px;
+    background: #205ca8;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+.secondary {
+    background: #667085;
+}
+
+.edit-button {
+    background: #19744a;
+    margin: 3px;
+}
+
+.delete-button {
+    background: #bd3434;
+    margin: 3px;
+}
+
+#message {
+    font-weight: bold;
+}
+
+.success {
+    color: #19744a;
+}
+
+.error {
+    color: #bd3434;
+}
+
+.table-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 15px;
+}
+
+.table-heading h2,
+.table-heading p {
+    margin: 0;
+}
+
+#searchInput {
+    max-width: 280px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 750px;
+}
+
+th,
+td {
+    padding: 12px;
+    border-bottom: 1px solid #e1e6ef;
+    text-align: left;
+}
+
+th {
+    background: #e9eff8;
+    color: #163b72;
+}
+
+tbody tr:hover {
+    background: #f7f9fc;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #667085;
+}
+
+@media (max-width: 650px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .table-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    #searchInput {
+        max-width: none;
+    }
+
+    .card {
+        padding: 16px;
+    }
+}

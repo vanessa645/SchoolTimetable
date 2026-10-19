@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Timetable Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>School Timetable</h1>
+            <p>Manage lessons, teachers, classes and classrooms</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="welcome">
+            <h2>Timetable Management Dashboard</h2>
+            <p>Add lessons and organize your school's weekly schedule.</p>
+        </section>
+
+        <section class="card">
+            <h2 id="formTitle">Add a Lesson</h2>
+
+            <form id="timetableForm">
+                <input type="hidden" id="lessonId">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="day">Day</label>
+                        <select id="day" required>
+                            <option value="">Select day</option>
+                            <option>Monday</option>
+                            <option>Tuesday</option>
+                            <option>Wednesday</option>
+                            <option>Thursday</option>
+                            <option>Friday</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="start_time">Start Time</label>
+                        <input type="time" id="start_time" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_time">End Time</label>
+                        <input type="time" id="end_time" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" placeholder="e.g. Mathematics" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="teacher">Teacher</label>
+                        <input type="text" id="teacher" placeholder="Teacher's name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="class_name">Class</label>
+                        <input type="text" id="class_name" placeholder="e.g. Grade 10A" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="classroom">Classroom</label>
+                        <input type="text" id="classroom" placeholder="e.g. Room 4" required>
+                    </div>
+                </div>
+
+                <div class="form-buttons">
+                    <button type="submit" id="saveButton">Add Lesson</button>
+                    <button type="button" id="cancelButton" class="secondary" hidden>
+                        Cancel Edit
+                    </button>
+                </div>
+            </form>
+
+            <p id="message" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="card">
+            <div class="table-heading">
+                <div>
+                    <h2>Weekly Timetable</h2>
+                    <p>All saved lessons appear below.</p>
+                </div>
+                <input type="search" id="searchInput" placeholder="Search lessons...">
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Time</th>
+                            <th>Subject</th>
+                            <th>Teacher</th>
+                            <th>Class</th>
+                            <th>Room</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timetableBody">
+                        <tr>
+                            <td colspan="7">Loading timetable...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>School Timetable Management System | ICT251 Web Technologies</p>
+    </footer>
+
+    <script>
+        const form = document.getElementById('timetableForm');
+        const lessonId = document.getElementById('lessonId');
+        const message = document.getElementById('message');
+        const timetableBody = document.getElementById('timetableBody');
+        const searchInput = document.getElementById('searchInput');
+        const saveButton = document.getElementById('saveButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const formTitle = document.getElementById('formTitle');
+
+        let lessons = [];
+
+        function showMessage(text, isError = false) {
+            message.textContent = text;
+            message.className = isError ? 'error' : 'success';
+        }
+
+        async function loadLessons() {
+            try {
+                const response = await fetch('/api/timetable');
+                if (!response.ok) throw new Error('Could not load timetable');
+
+                lessons = await response.json();
+                renderLessons();
+            } catch (error) {
+                timetableBody.innerHTML =
+                    '<tr><td colspan="7">Unable to load lessons. Check the server.</td></tr>';
+                showMessage(error.message, true);
+            }
+        }
+
+        function renderLessons() {
+            const query = searchInput.value.toLowerCase().trim();
+
+            const filtered = lessons.filter(lesson =>
+                [
+                    lesson.day, lesson.subject, lesson.teacher,
+                    lesson.class_name, lesson.classroom,
+                    lesson.start_time, lesson.end_time
+                ].some(value => String(value).toLowerCase().includes(query))
+            );
+
+            timetableBody.replaceChildren();
+
+            if (filtered.length === 0) {
+                const row = timetableBody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 7;
+                cell.textContent = query
+                    ? 'No matching lessons found.'
+                    : 'No lessons added yet.';
+                return;
+            }
+
+            filtered.forEach(lesson => {
+                const row = timetableBody.insertRow();
+
+                [
+                    lesson.day,
+                    `${lesson.start_time} - ${lesson.end_time}`,
+                    lesson.subject,
+                    lesson.teacher,
+                    lesson.class_name,
+                    lesson.classroom
+                ].forEach(value => {
+                    const cell = row.insertCell();
+                    cell.textContent = value;
+                });
+
+                const actions = row.insertCell();
+
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.className = 'edit-button';
+                editButton.addEventListener('click', () => editLesson(lesson));
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.className = 'delete-button';
+                deleteButton.addEventListener('click', () => deleteLesson(lesson.id));
+
+                actions.append(editButton, deleteButton);
+            });
+        }
+
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+
+            const data = {
+                day: document.getElementById('day').value,
+                start_time: document.getElementById('start_time').value,
+                end_time: document.getElementById('end_time').value,
+                subject: document.getElementById('subject').value.trim(),
+                teacher: document.getElementById('teacher').value.trim(),
+                class_name: document.getElementById('class_name').value.trim(),
+                classroom: document.getElementById('classroom').value.trim()
+            };
+
+            if (data.start_time >= data.end_time) {
+                showMessage('End time must be later than start time.', true);
+                return;
+            }
+
+            const id = lessonId.value;
+            const url = id ? `/api/timetable/${id}` : '/api/timetable';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Operation failed');
+
+                showMessage(result.message);
+                form.reset();
+                resetEdit();
+                await loadLessons();
+            } catch (error) {
+                showMessage(error.message, true);
+            }
+        });
+
+        function editLesson(lesson) {
+            lessonId.value = lesson.id;
+
+            ['day', 'start_time', 'end_time', 'subject',
+                'teacher', 'class_name', 'classroom'].forEach(field => {
+                document.getElementById(field).value = lesson[field];
+            });
+
+            formTitle.textContent = 'Edit Lesson';
+            saveButton.textContent = 'Save Changes';
+            cancelButton.hidden = false;
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetEdit() {
+            lessonId.value = '';
+            formTitle.textContent = 'Add a Lesson';
+            saveButton.textContent = 'Add Lesson';
+            cancelButton.hidden = true;
+        }
+
+        cancelButton.addEventListener('click', () => {
+            form.reset();
+            resetEdit();
+            showMessage('');
+        });
+
+        async function deleteLesson(id) {
+            const confirmed = confirm('Are you sure you want to delete this lesson?');
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`/api/timetable/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Delete failed');
+
+                showMessage(result.message);
+                await loadLessons();
+            } catch (error) {
+                showMessage(error.message, true);
+            }
+        }
+
+        searchInput.addEventListener('input', renderLessons);
+
+        loadLessons();
+    </script>
+</body>
+</html>
